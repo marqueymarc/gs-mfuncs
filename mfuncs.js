@@ -82,18 +82,20 @@ function cellsP(arg) {
     && Array.isArray(arg[0][0]);
   return ret;
 }
-
+/* @customfunction
+*/
 function canonCells(argsarray, flatP = false) {
   let ret = [...argsarray]; // convert
+  // flattening
+  if (flatP)
+    return ret.flat(Infinity);
 
   if (!cellsP(ret))
     ret = [ret]; // turn into a "range"
   else
     ret = ret[0]; // unpack extra wrapping
 
-  // flattening
-  if (flatP)
-    ret = ret.flat(Infinity);
+
 
   return ret;
 }
@@ -260,6 +262,11 @@ function rr(cells) {
  * @customfunction
  */
 
+function rNorm(table, keys, ...tabs) {
+  if (!Array.isArray(keys))
+    keys = [keys];
+}
+
 function rNormalize(table, keyix = 0, reslist = [[]]) {
   //canonicalize arguments
   if (!Array.isArray(table) || !Array.isArray(table[0])){
@@ -284,4 +291,39 @@ function rNormalize(table, keyix = 0, reslist = [[]]) {
     });
   });
   return res;
+}
+
+function tabColmap(table, list) {
+  return list.map(e=>tabCol(table, e))
+}
+
+//external ix and table to internaal column ix
+function tabCol(table, e){
+  if (Number.isInteger(e))
+    return e-1;
+  e = table[0].indexOf(e);
+  return e===-1? null: e;
+}
+
+/**
+ * relational Projection, return only indicated columns
+ *
+ * @param {range} table relation/table
+ * @param {int, String,...} index_list   cells or data with column numbers or header string
+ *
+ * @customfunction
+ */
+
+function rProject(table, ...ixlist){
+
+  if (!Array.isArray(table) || !Array.isArray(table[0])){
+    throw new Error("First parameter must be a range");
+  }
+  //TODO: Handle explicit 2d cells.
+  ixlist = canonCells(ixlist,true);
+  return ixlist;
+  ixlist = tabColmap(table, ixlist)
+
+  ntable = table.map(row=> ixlist.map(ix=>row[ix]))
+  return ntable
 }
