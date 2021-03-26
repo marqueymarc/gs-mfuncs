@@ -2,7 +2,7 @@
 /**
  * List of all different permutations(no repeat) (stacked in rows)
  *
- * @param {Array [[]]} objectsArr  items to permute
+ * @param {[[]]} objectsArr  items to permute
  * @param {Number} k  choose (like allComb but w/ "duplicates")
  *
  * @returns List of all different permutations(no repeat) stacked in rows
@@ -262,11 +262,23 @@ function rr(cells) {
  */
 
 function rNorm(table, keys, ...tabs) {
-  kays = tabColmap(table, keys, false);
+  return rNormAll(table, keys, tabs, 0)
+}
+/*
+ * @customfunction
+ */
+function rNormV(table, keys, ...tabs) {
+  return rNormAll(table, keys, tabs, 1)
+}
+
+function rNormAll(table, keys, tabs, vert) {
+
   allres = tabs.map(tab => {
     cols = tabColmap(table, tab, false);
     return mapUnique(rProject(table, [].concat(keys, cols)));
   });
+  if (vert)
+    allres = allres.map(transpose2D);
   //merge allres's side by side.
   maxrows = Math.max(...allres.map(t=>t.length));
   res = [];
@@ -277,10 +289,23 @@ function rNorm(table, keys, ...tabs) {
       return [...Array(tab[0].length)].map(_ => "");
     }).flat(Infinity);
   }
+  if (vert)
+    res = transpose2D(res);
   return res;
 }
 
-// sorts uniquely on all keys, keeping order
+function transpose2D(matrix) {
+  let r = matrix.length
+  let c = matrix[0].length
+  let res = [...Array(c)].map(_=>Array(r))
+  for (y = 0; y < r; y++)
+    for (x = 0; x < c; x++) {
+      res[x][y] = matrix[y][x]
+    }
+  return res;
+}
+
+// dup row elimimnation considering all columns keeping order
 function mapUnique(table) {
   m = new Map;
   table.map((row) => {
