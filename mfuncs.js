@@ -262,44 +262,41 @@ function rr(cells) {
  */
 
 function rNorm(table, keys, ...tabs) {
-  if (!Array.isArray(keys))
-    keys = [keys];
-}
-
-function rNormalize(table, keyix = 0, reslist = [[]]) {
-  //canonicalize arguments
-  if (!Array.isArray(table) || !Array.isArray(table[0])){
-    throw new Error("First parameter must be a 2d range");
+  kays = tabColmap(table, keys, false);
+  allres = tabs.map(tab => {
+    cols = tabColmap(table, tab, false);
+    return mapUnique(rProject(table, [].concat(keys, cols)));
+  });
+  //merge allres's side by side.
+  maxrows = Math.max(...allres.map(t=>t.length));
+  res = [];
+  for (let r = 0; r < maxrows; r++) {
+    res[r] = allres.map(tab => {
+      if (r < tab.length)
+        return tab[r];
+      return [...Array(tab[0].length)].map(_ => "");
+    }).flat(Infinity);
   }
-  if (!Array.isArray(reslist)) // 1 => [[1]]
-    reslist = [[reslist]];
-  if (!Array.isArray(reslist[0])) // [1, 2] => [[1,2]]
-    reslist = [reslist];
-  //index
-  let m = new Map();
-  table.forEach((row) => {
-    let entry = m.get(row[keyix]) || [];
-    entry.push(row);
-    m.set(row[keyix], entry);
-  });
-  let res = [[]];
-  let resIx = 0;
-  reslist.forEach((onetab) => {
-    m.forEach((value, key) => {
-
-    });
-  });
   return res;
 }
 
-function tabColmap(table, list) {
-  return list.map(e=>tabCol(table, e))
+// sorts uniquely on all keys, keeping order
+function mapUnique(table) {
+  m = new Map;
+  table.map((row) => {
+    m.set(row.toString(), row);
+  });
+  return [...m.values()];
+}
+
+function tabColmap(table, list, dec=true) {
+  return [list].flat(Infinity).map(e=>tabCol(table, e, dec))
 }
 
 //external ix and table to internaal column ix
-function tabCol(table, e){
+function tabCol(table, e, decrement){
   if (Number.isInteger(e))
-    return e-1;
+    return decrement? e-1: e;
   e = table[0].indexOf(e);
   return e===-1? null: e;
 }
@@ -319,9 +316,6 @@ function rProject(table, ...ixlist){
     throw new Error("First parameter must be a range");
   }
   //TODO: Handle explicit 2d cells.
-  //ixlist = canonCells(ixlist,true);
-  ixlist = [ixlist].flat(Infinity);
-  return ixlist;
   ixlist = tabColmap(table, ixlist)
 
   ntable = table.map(row=> ixlist.map(ix=>row[ix]))
