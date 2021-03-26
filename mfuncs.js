@@ -86,16 +86,15 @@ function cellsP(arg) {
 */
 function canonCells(argsarray, flatP = false) {
   let ret = [...argsarray]; // convert
-  // flattening
-  if (flatP)
-    return ret.flat(Infinity);
 
   if (!cellsP(ret))
     ret = [ret]; // turn into a "range"
   else
     ret = ret[0]; // unpack extra wrapping
 
-
+  // flattening
+  if (flatP)
+    ret = ret.flat(Infinity);
 
   return ret;
 }
@@ -320,7 +319,8 @@ function rProject(table, ...ixlist){
     throw new Error("First parameter must be a range");
   }
   //TODO: Handle explicit 2d cells.
-  ixlist = canonCells(ixlist,true);
+  //ixlist = canonCells(ixlist,true);
+  ixlist = [ixlist].flat(Infinity);
   return ixlist;
   ixlist = tabColmap(table, ixlist)
 
