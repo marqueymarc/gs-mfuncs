@@ -277,6 +277,25 @@ function rNormAll(table, keys, tabs, vert) {
     cols = tabColmap(table, tab, false);
     return mapUnique(rProject(table, [].concat(keys, cols)));
   });
+  return hvMerge(allres, vert)
+  if (vert)
+    allres = allres.map(transpose2D);
+  //merge allres's side by side.
+  maxrows = Math.max(...allres.map(t=>t.length));
+  res = [];
+  for (let r = 0; r < maxrows; r++) {
+    res[r] = allres.map(tab => {
+      if (r < tab.length)
+        return tab[r];
+      return [...Array(tab[0].length)].map(_ => "");
+    }).flat(Infinity);
+  }
+  if (vert)
+    res = transpose2D(res);
+  return res;
+}
+
+function hvMerge(allres, vert) {
   if (vert)
     allres = allres.map(transpose2D);
   //merge allres's side by side.
@@ -324,6 +343,28 @@ function tabCol(table, e, decrement){
     return decrement? e-1: e;
   e = table[0].indexOf(e);
   return e===-1? null: e;
+}
+
+/*
+ * @customfunction
+ */
+function hLayout(...mats) {
+  return hvLayout(mats, 0)
+}
+
+/*
+ * @customfunction
+ */
+function vLayout(...mats) {
+  return hvLayout(mats, 1)
+}
+
+function hvLayout(mats, vert) {
+  // all args must be matrices or one dim.
+  mats = mats.map(m=>Array.isArray(m)? m: [[m]])
+
+  // layout
+  return hvMerge(mats, vert);
 }
 
 /**
